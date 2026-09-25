@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDeviceOptimization } from './lib/deviceOptimization';
+import { Preloader } from './components/Preloader';
 import { Navbar } from './components/Navbar';
 import { Hero3D } from './components/Hero3D';
 import { BentoGrid } from './components/BentoGrid';
@@ -36,6 +37,9 @@ export const App: React.FC = () => {
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', background: 'transparent' }}>
+      {/* Cinematic Splash Screen Preloader on First Visit / Refresh */}
+      <Preloader />
+
       {/* Dynamic Cursor Spotlight Ambient Layer (Desktop Ultra Mode) */}
       {mode === 'ultra' && cursorPos.x > -500 && (
         <div
