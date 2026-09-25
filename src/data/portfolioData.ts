@@ -7,7 +7,7 @@ export const PERSONAL_INFO = {
   avatarFormal: '/projects/Foto_Formal.png',
   tagline: 'Crafting intuitive UI/UX design systems, bespoke brand identities, and modern digital product experiences.',
   location: 'Indonesia (GMT+7)',
-  bio: 'Specializing in intuitive UI/UX design systems, bespoke brand visual identities, and modern digital product experiences that seamlessly blend aesthetic luxury with functional clarity.',
+  bio: 'Halo, saya Arif Ahmad Muzakky, seorang mahasiswa program studi D3 Manajemen Informatika di Universitas Lampung. Saya memiliki ketertarikan yang mendalam terhadap dunia estetika visual. Mulai dari Desain Grafis, UI/UX Design, Fotografi, hingga Videografi dan proses editing—saya selalu antusias dalam menciptakan maupun menikmati karya visual yang memanjakan mata.',
   status: 'Available for UI/UX & Design Projects',
   email: 'arif.muzakky@gmail.com',
   whatsapp: 'https://wa.me/6281234567890?text=Hello%20Arif,%20I%20am%20interested%20in%20discussing%20a%20design%20project',

@@ -19,6 +19,57 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const scrollProgressRef = useRef(0);
 
+  // Glitch & Scramble Text State
+  const [glitchName, setGlitchName] = useState(PERSONAL_INFO.name);
+  const [isGlitching, setIsGlitching] = useState(false);
+
+  useEffect(() => {
+    let timeoutId: number;
+    let animFrameId: number;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ!<>-_\\/[]{}—=+*^?#_';
+
+    const triggerGlitch = () => {
+      setIsGlitching(true);
+      const original = PERSONAL_INFO.name;
+      let frame = 0;
+      
+      const update = () => {
+        let output = '';
+        for (let i = 0; i < original.length; i++) {
+          if (original[i] === ' ') {
+            output += ' ';
+            continue;
+          }
+          if (frame < 16) {
+            output += chars[Math.floor(Math.random() * chars.length)];
+          } else {
+            output += original[i];
+          }
+        }
+        
+        setGlitchName(output);
+        
+        if (frame < 16) {
+          frame++;
+          animFrameId = requestAnimationFrame(update);
+        } else {
+          setIsGlitching(false);
+          setGlitchName(original);
+          timeoutId = window.setTimeout(triggerGlitch, 8000);
+        }
+      };
+      
+      update();
+    };
+
+    timeoutId = window.setTimeout(triggerGlitch, 8000);
+
+    return () => {
+      clearTimeout(timeoutId);
+      cancelAnimationFrame(animFrameId);
+    };
+  }, []);
+
   // Track scroll progress for the pinned scroll effect
   useEffect(() => {
     let ticking = false;
@@ -402,8 +453,10 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
                   fontWeight: 800
                 }}
               >
-                Hi, I'm <span className="heading-gradient">{PERSONAL_INFO.name}</span> <br />
-                <span className="cyan-gradient">{PERSONAL_INFO.role}</span>
+                <span className={isGlitching ? "glitch-active" : ""} style={{ display: 'inline-block' }}>
+                  Hi, I'm <span className="heading-gradient">{glitchName}</span>
+                </span> <br />
+                <span className="shimmer-text">{PERSONAL_INFO.role}</span>
               </h1>
 
               {/* CTA Buttons */}
@@ -631,7 +684,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
                   <div style={{ fontWeight: 800, fontSize: '0.98rem', color: '#fff', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
                     Arif Ahmad Muzakky
                   </div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--accent-cyan)', fontFamily: 'var(--font-mono)', fontWeight: 600, marginTop: '0.15rem' }}>
+                  <div className="shimmer-text" style={{ fontSize: '0.74rem', fontFamily: 'var(--font-mono)', fontWeight: 600, marginTop: '0.15rem' }}>
                     UI/UX & Graphic Design
                   </div>
                 </div>
@@ -731,7 +784,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
             <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
               {PERSONAL_INFO.name}
             </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--accent-cyan)', fontFamily: 'var(--font-mono)', fontWeight: 600, marginTop: '0.15rem', letterSpacing: '0.04em' }}>
+            <div className="shimmer-text" style={{ fontSize: '0.78rem', fontFamily: 'var(--font-mono)', fontWeight: 600, marginTop: '0.15rem', letterSpacing: '0.04em' }}>
               {PERSONAL_INFO.role}
             </div>
           </div>
