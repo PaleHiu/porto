@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowUpRight } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import type { PerformanceMode } from '../types';
 
 interface NavbarProps {
@@ -21,9 +21,7 @@ export const Navbar: React.FC<NavbarProps> = ({ mode = 'ultra' }) => {
   const navLinks = [
     { label: 'About', href: '#about' },
     { label: 'Projects', href: '#projects' },
-    { label: 'Skills', href: '#skills' },
     { label: 'Experience', href: '#experience' },
-    { label: 'Lab', href: '#lab' },
     { label: 'Contact', href: '#contact' }
   ];
 
@@ -55,92 +53,63 @@ export const Navbar: React.FC<NavbarProps> = ({ mode = 'ultra' }) => {
           transition: 'all 0.3s ease'
         }}
       >
-        {/* Brand Monogram */}
+        {/* Brand Name */}
         <a
           href="#"
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.65rem',
             textDecoration: 'none',
             color: 'inherit'
           }}
         >
-          <div
+          <span
             style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, rgba(0, 245, 212, 0.15), rgba(59, 130, 246, 0.1))',
-              border: '1px solid rgba(0, 245, 212, 0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               fontWeight: 800,
-              fontSize: '1.1rem',
-              color: 'var(--accent-cyan)',
-              boxShadow: '0 0 15px rgba(0, 245, 212, 0.2)'
+              fontSize: '1.25rem',
+              letterSpacing: '-0.02em',
+              fontFamily: 'var(--font-heading)',
+              color: 'var(--text-primary)',
+              display: 'inline-flex',
+              alignItems: 'center'
             }}
           >
-            A
-          </div>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              Arif <span style={{ color: 'var(--accent-cyan)' }}>.</span>
-            </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-              UI/UX & Design
-            </div>
-          </div>
+            AzHKy<span style={{ color: 'var(--accent-cyan)' }}>.</span>
+          </span>
         </a>
 
-        {/* Desktop Nav Links */}
-        <nav
-          style={{
-            display: 'none',
-            alignItems: 'center',
-            gap: '1.75rem',
-            fontFamily: 'var(--font-sans)',
-            fontSize: '0.88rem',
-            fontWeight: 500
-          }}
-          className="desktop-nav"
-        >
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              style={{
-                color: 'var(--text-secondary)',
-                textDecoration: 'none',
-                transition: 'color 0.2s ease',
-                position: 'relative',
-                padding: '0.2rem 0'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-cyan)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
-            >
-              {link.label}
-            </a>
-          ))}
-        </nav>
-
-        {/* Right Controls: CTA */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {/* Quick CTA */}
-          <a
-            href="#contact"
-            className="btn-primary"
+        {/* Right Section: Navigation Links & Mobile Menu Button */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {/* Desktop Nav Links */}
+          <nav
             style={{
-              padding: '0.45rem 1rem',
-              fontSize: '0.8rem',
-              borderRadius: '9999px',
-              textDecoration: 'none'
+              display: 'none',
+              alignItems: 'center',
+              gap: '1.75rem',
+              fontFamily: 'var(--font-sans)',
+              fontSize: '0.88rem',
+              fontWeight: 500
             }}
+            className="desktop-nav"
           >
-            <span>Let's Talk</span>
-            <ArrowUpRight size={14} />
-          </a>
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                style={{
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  transition: 'color 0.2s ease',
+                  position: 'relative',
+                  padding: '0.2rem 0'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-cyan)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
 
           {/* Mobile Menu Trigger */}
           <button

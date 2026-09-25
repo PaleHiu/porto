@@ -195,9 +195,9 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
 
         const isMobile = window.innerWidth <= 960;
         const initialX = isMobile ? 0 : 2.4;
-        // TAHAP 2: Ring STRICTLY stays on the right until scroll > 0.22 (giving Tahap 1 complete silence and full fade-out)
-        // Moves from initialX to 0.0 between 0.22 and 0.52
-        const rawRingProgress = Math.min(1, Math.max(0, (currentScroll - 0.22) / 0.30));
+        // TAHAP 2: Ring STRICTLY stays on the right during Stage 1 and the pause buffer (currentScroll <= 0.24)
+        // Moves smoothly from initialX (2.4) to center (0.0) between 0.24 and 0.54
+        const rawRingProgress = Math.min(1, Math.max(0, (currentScroll - 0.27) / 0.30));
         // Smooth ease-in-out S-curve for ring motion
         const smoothRingT = rawRingProgress * rawRingProgress * (3 - 2 * rawRingProgress);
 
@@ -269,20 +269,38 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
     cardRef.current.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
   };
 
-  // 3-Stage Dynamic Scroll Transitions
-  // TAHAP 1: Initial content exit (Teks & Foto.webp fade out completely and strictly by progress 0.16)
-  const initialOpacity = Math.max(0, 1 - scrollProgress / 0.16);
-  const initialTranslateY = -(scrollProgress / 0.16) * 32;
-  const initialScale = 1 - (scrollProgress / 0.16) * 0.05;
+  // 4-Stage Dynamic Scroll Transitions
+  // TAHAP 1: Initial content exit (Teks & Foto.webp fade out completely and strictly by progress 0.12)
+  const initialOpacity = Math.max(0, 1 - scrollProgress / 0.12);
+  const initialTranslateY = -(scrollProgress / 0.12) * 35;
+  const initialScale = 1 - (scrollProgress / 0.12) * 0.05;
 
-  // TAHAP 3: Formal portrait reveals ONLY AFTER Stage 2 (Ring centered at 0.52)
-  // Reveals smoothly between 0.56 and 0.90
-  const rawFormalProgress = Math.min(1, Math.max(0, (scrollProgress - 0.56) / 0.34));
+  // JEDA / BUFFER TAHAP 1 & 2:
+  // Antara 0.12 dan 0.24, teks sudah 100% hilang, dan 3D ring masih terkunci 100% diam di kanan.
+
+  // TAHAP 3: Formal portrait reveals ONLY AFTER Stage 2 (Ring fully centered at 0.54)
+  // Reveals smoothly between 0.58 and 0.78
+  const rawFormalProgress = Math.min(1, Math.max(0, (scrollProgress - 0.58) / 0.20));
   // Silky smooth ease-out curve for the rising animation
   const riseCurve = 1 - Math.pow(1 - rawFormalProgress, 2.2);
   const formalOpacity = rawFormalProgress > 0 ? Math.min(1, Math.pow(rawFormalProgress, 0.6) * 1.25) : 0;
   const formalScale = 0.90 + rawFormalProgress * 0.28; // Scales smoothly from 0.90 up to 1.18
   const formalTranslateY = Math.round((1 - riseCurve) * 220); // Meluncur anggun naik 220px dari bawah
+
+  // TAHAP 4: Bubble Chat Pop-ups AFTER Stage 3 (Settles after formal portrait is fully in place)
+  // Bubble 1 (Left - Shape Line 1) pops in between scrollProgress 0.78 and 0.88
+  const rawBubble1 = Math.min(1, Math.max(0, (scrollProgress - 0.78) / 0.10));
+  const bubble1Progress = 1 - Math.pow(1 - rawBubble1, 2.5);
+  const bubble1Opacity = rawBubble1 > 0 ? Math.min(1, rawBubble1 * 1.8) : 0;
+  const bubble1Scale = rawBubble1 > 0 ? 0.6 + bubble1Progress * 0.4 : 0.6;
+  const bubble1TranslateY = (1 - bubble1Progress) * 25;
+
+  // Bubble 2 (Right - Shape Line 2) pops in between scrollProgress 0.84 and 0.94
+  const rawBubble2 = Math.min(1, Math.max(0, (scrollProgress - 0.84) / 0.10));
+  const bubble2Progress = 1 - Math.pow(1 - rawBubble2, 2.5);
+  const bubble2Opacity = rawBubble2 > 0 ? Math.min(1, rawBubble2 * 1.8) : 0;
+  const bubble2Scale = rawBubble2 > 0 ? 0.6 + bubble2Progress * 0.4 : 0.6;
+  const bubble2TranslateY = (1 - bubble2Progress) * 25;
 
   return (
     <div
@@ -291,7 +309,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
       className="hero-pinned-wrapper"
       style={{
         position: 'relative',
-        height: '280vh' // Generous scroll track for perfectly paced 3-stage choreography
+        height: '320vh' // Generous scroll track for smooth 4-phase choreography
       }}
     >
       <section
@@ -401,9 +419,6 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
                 <a href="#projects" className="btn-primary" id="hero-projects-cta">
                   <span>Explore Design Works</span>
                   <ArrowDown size={16} />
-                </a>
-                <a href="#contact" className="btn-secondary" id="hero-contact-cta">
-                  <span>Let's Collaborate</span>
                 </a>
               </div>
 
@@ -722,6 +737,160 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
           </div>
         </div>
 
+        {/* ================= BUBBLE CHAT POP UP 1 (LEFT - SHAPE LINE 1) ================= */}
+        <div
+          className="hero-bubble-chat hero-bubble-chat-1"
+          style={{
+            position: 'absolute',
+            right: 'calc(50% + clamp(130px, 11vw, 200px))',
+            top: 'clamp(26%, 28vh, 36%)',
+            maxWidth: 'clamp(310px, 27vw, 410px)',
+            zIndex: 22,
+            opacity: bubble1Opacity,
+            transform: `translate3d(0, ${bubble1TranslateY}px, 0) scale3d(${bubble1Scale}, ${bubble1Scale}, 1)`,
+            transformOrigin: 'bottom right',
+            visibility: bubble1Opacity > 0 ? 'visible' : 'hidden',
+            transition: 'opacity 0.08s linear, transform 0.08s linear',
+            pointerEvents: bubble1Opacity > 0.5 ? 'auto' : 'none',
+            willChange: 'opacity, transform'
+          }}
+        >
+          <div
+            style={{
+              position: 'relative',
+              background: 'rgba(9, 13, 20, 0.92)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1.5px solid rgba(0, 245, 212, 0.5)',
+              borderRadius: '1.35rem 1.35rem 1.35rem 0.35rem',
+              padding: '1.15rem 1.45rem',
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.92), 0 0 35px rgba(0, 245, 212, 0.28)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.45rem'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{
+                fontSize: '0.72rem',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 700,
+                color: 'var(--accent-cyan)',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                background: 'rgba(0, 245, 212, 0.14)',
+                padding: '0.2rem 0.65rem',
+                borderRadius: '999px',
+                border: '1px solid rgba(0, 245, 212, 0.35)'
+              }}>
+                Mindset
+              </span>
+            </div>
+            <p style={{
+              fontSize: 'clamp(0.94rem, 1.05vw, 1.05rem)',
+              fontWeight: 600,
+              color: '#ffffff',
+              lineHeight: 1.5,
+              margin: 0,
+              letterSpacing: '-0.01em'
+            }}>
+              “Tetap Selalu Berusaha, Meskipun Maksain Untuk Di Usahakan.”
+            </p>
+
+            {/* Bubble Tail Pointer */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '-9px',
+                right: '28px',
+                width: 0,
+                height: 0,
+                borderLeft: '9px solid transparent',
+                borderRight: '9px solid transparent',
+                borderTop: '9px solid rgba(0, 245, 212, 0.5)',
+                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
+              }}
+            />
+          </div>
+        </div>
+
+        {/* ================= BUBBLE CHAT POP UP 2 (RIGHT - SHAPE LINE 2) ================= */}
+        <div
+          className="hero-bubble-chat hero-bubble-chat-2"
+          style={{
+            position: 'absolute',
+            left: 'calc(50% + clamp(130px, 11vw, 200px))',
+            top: 'clamp(44%, 48vh, 56%)',
+            maxWidth: 'clamp(330px, 29vw, 440px)',
+            zIndex: 22,
+            opacity: bubble2Opacity,
+            transform: `translate3d(0, ${bubble2TranslateY}px, 0) scale3d(${bubble2Scale}, ${bubble2Scale}, 1)`,
+            transformOrigin: 'bottom left',
+            visibility: bubble2Opacity > 0 ? 'visible' : 'hidden',
+            transition: 'opacity 0.08s linear, transform 0.08s linear',
+            pointerEvents: bubble2Opacity > 0.5 ? 'auto' : 'none',
+            willChange: 'opacity, transform'
+          }}
+        >
+          <div
+            style={{
+              position: 'relative',
+              background: 'rgba(9, 13, 20, 0.92)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1.5px solid rgba(59, 130, 246, 0.5)',
+              borderRadius: '1.35rem 1.35rem 0.35rem 1.35rem',
+              padding: '1.15rem 1.45rem',
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.92), 0 0 35px rgba(59, 130, 246, 0.28)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.45rem'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{
+                fontSize: '0.72rem',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 700,
+                color: '#60a5fa',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                background: 'rgba(59, 130, 246, 0.14)',
+                padding: '0.2rem 0.65rem',
+                borderRadius: '999px',
+                border: '1px solid rgba(59, 130, 246, 0.35)'
+              }}>
+                Principle
+              </span>
+            </div>
+            <p style={{
+              fontSize: 'clamp(0.94rem, 1.05vw, 1.05rem)',
+              fontWeight: 600,
+              color: '#ffffff',
+              lineHeight: 1.5,
+              margin: 0,
+              letterSpacing: '-0.01em'
+            }}>
+              “Selalu Berikan Effort & Hasil Yang Maksimal, Agar Cepat Mendapatkan 2M (Makasih Mas).”
+            </p>
+
+            {/* Bubble Tail Pointer */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '-9px',
+                left: '28px',
+                width: 0,
+                height: 0,
+                borderLeft: '9px solid transparent',
+                borderRight: '9px solid transparent',
+                borderTop: '9px solid rgba(59, 130, 246, 0.5)',
+                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
+              }}
+            />
+          </div>
+        </div>
+
         {/* Sleek Pinned Scroll Progress Indicator */}
         <div
           style={{
@@ -780,7 +949,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
         <style>{`
           @media (max-width: 960px) {
             .hero-pinned-wrapper {
-              height: 220vh !important; /* Balanced track on mobile for smooth 3-stage scroll */
+              height: 260vh !important; /* Balanced track on mobile for smooth 4-phase scroll */
             }
             .hero-split-grid {
               grid-template-columns: 1fr !important;
@@ -803,6 +972,18 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
             }
             .formal-portrait-img {
               max-height: 65vh !important;
+            }
+            .hero-bubble-chat-1 {
+              right: auto !important;
+              left: 14px !important;
+              top: 14% !important;
+              max-width: 250px !important;
+            }
+            .hero-bubble-chat-2 {
+              left: auto !important;
+              right: 14px !important;
+              top: 56% !important;
+              max-width: 260px !important;
             }
           }
         `}</style>
