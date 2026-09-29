@@ -4,8 +4,10 @@ import { SOFTWARE_TOOLS } from '../data/portfolioData';
 
 export const BentoGrid: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   // scrollProgress: 0 = section belum terlihat, 1 = section sudah penuh di viewport
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [titleVisible, setTitleVisible] = useState(false);
   const [iconsVisible, setIconsVisible] = useState(false);
 
   // Visual Glitch State for CREATIVE & VISUAL (murni efek visual glitch tanpa acak teks agar objek tidak bergeser)
@@ -164,40 +166,57 @@ export const BentoGrid: React.FC = () => {
     };
   }, []);
 
+  // Deteksi ketika elemen judul CREATIVE, VISUAL, ART. telah minimal 50% terlihat di viewport
   useEffect(() => {
-    let ticking = false;
+    const titleEl = titleRef.current;
+    if (!titleEl) return;
 
+    // IntersectionObserver dengan threshold 0.5 (tepat 50% elemen terlihat di viewport)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+            setTitleVisible(true);
+          } else if (!entry.isIntersecting && entry.boundingClientRect.top > 0) {
+            // Reset saat discroll kembali ke atas (elemen keluar ke bawah layar)
+            setTitleVisible(false);
+          }
+        });
+      },
+      { threshold: [0, 0.5] }
+    );
+
+    observer.observe(titleEl);
+
+    let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
+          const windowHeight = window.innerHeight;
+
+          // Scroll progress untuk bio section (tetap responsif mengikuti section)
           if (sectionRef.current) {
             const rect = sectionRef.current.getBoundingClientRect();
-            const windowHeight = window.innerHeight;
-
-            // startPoint: Animasi mulai saat rect.top = windowHeight * 0.90
-            const startPoint = windowHeight * 0.90;
+            const startPoint = windowHeight * 0.92;
             const endPoint = windowHeight * 0.10;
-
             const raw = (startPoint - rect.top) / (startPoint - endPoint);
             const clamped = Math.min(1, Math.max(0, raw));
-
             setScrollProgress(clamped);
+          }
 
-            // Memicu animasi masuk logo setelah teks judul (CREATIVE, VISUAL, ART.) telah sepenuhnya tampil di layar
-            const textHasFullyAppeared = clamped >= 0.45;
+          // Fallback scroll check: Memicu animasi begitu 50% tinggi elemen judul terlihat di viewport
+          if (titleRef.current) {
+            const titleRect = titleRef.current.getBoundingClientRect();
+            const is50PercentVisible = titleRect.top + (titleRect.height * 0.5) <= windowHeight;
 
-            if (textHasFullyAppeared) {
-              setIconsVisible(true);
-              if (!hasGlitchTriggeredOnScroll.current) {
-                hasGlitchTriggeredOnScroll.current = true;
-                triggerGlitchRef.current();
-              }
-            } else if (clamped < 0.20) {
+            if (is50PercentVisible) {
+              setTitleVisible(true);
+            } else if (titleRect.top > windowHeight) {
               // Reset saat discroll kembali ke atas sehingga animasi dapat diputar ulang
-              setIconsVisible(false);
-              hasGlitchTriggeredOnScroll.current = false;
+              setTitleVisible(false);
             }
           }
+
           ticking = false;
         });
         ticking = true;
@@ -206,23 +225,35 @@ export const BentoGrid: React.FC = () => {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Initial check
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
-  // ======== Koreografi scroll-driven per elemen ========
+  // Orkestrasi: Setelah judul CREATIVE, VISUAL, ART. selesai reveal secara berjenjang,
+  // munculkan software dock dan berikan aksen glitch pertama
+  useEffect(() => {
+    if (titleVisible) {
+      const timer = window.setTimeout(() => {
+        setIconsVisible(true);
+        if (!hasGlitchTriggeredOnScroll.current) {
+          hasGlitchTriggeredOnScroll.current = true;
+          triggerGlitchRef.current();
+        }
+      }, 650);
+      return () => window.clearTimeout(timer);
+    } else {
+      setIconsVisible(false);
+      hasGlitchTriggeredOnScroll.current = false;
+    }
+  }, [titleVisible]);
 
-  // Sisi Kanan (Judul): Muncul pertama, dari progress 0 → 0.45
-  // Bergerak dari kanan (+150px) → ke posisi asli (0px)
-  const rightProgress = Math.min(1, scrollProgress / 0.45);
-  const rightEase = rightProgress * rightProgress * (3 - 2 * rightProgress); // Smooth ease
-  const rightTranslateX = (1 - rightEase) * 120;
-  const rightOpacity = rightEase;
-
-  // Sisi Kiri (Bio): Mulai masuk dari progress 0.3 → 0.8 (menyusul)
-  // Bergerak dari bawah (translateY: +100px) → ke posisi asli (0px)
-  const leftRaw = Math.min(1, Math.max(0, (scrollProgress - 0.3) / 0.5));
+  // Sisi Kiri (Bio): Bergerak halus dari bawah (translateY: +60px) → ke posisi asli (0px)
+  const leftRaw = Math.min(1, Math.max(0, (scrollProgress - 0.06) / 0.42));
   const leftEase = leftRaw * leftRaw * (3 - 2 * leftRaw); // Smooth ease
-  const leftTranslateY = (1 - leftEase) * 100;
+  const leftTranslateY = (1 - leftEase) * 60;
   const leftOpacity = leftEase;
 
   return (
@@ -269,17 +300,15 @@ export const BentoGrid: React.FC = () => {
           <div className="about-title-col">
             <div
               style={{
-                opacity: rightOpacity,
-                transform: `translateX(${rightTranslateX}px)`,
-                willChange: 'opacity, transform',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'flex-end',
-                width: '100%'
+                width: '100%',
+                position: 'relative'
               }}
             >
               <div
-                className="badge"
+                className={`badge title-badge-reveal ${titleVisible ? 'badge-in' : ''}`}
                 style={{
                   marginBottom: '1.5rem',
                   display: 'inline-flex',
@@ -292,6 +321,8 @@ export const BentoGrid: React.FC = () => {
               </div>
 
               <h2
+                ref={titleRef}
+                className="about-hero-title"
                 style={{
                   fontSize: 'clamp(3.5rem, 6vw, 5.5rem)',
                   fontWeight: 800,
@@ -302,26 +333,35 @@ export const BentoGrid: React.FC = () => {
                   textTransform: 'uppercase'
                 }}
               >
-                <div
-                  className={`glitch-outline-title ${isGlitching ? 'glitch-active' : ''}`}
-                  data-text="CREATIVE"
-                  onMouseEnter={() => triggerGlitchRef.current()}
-                  title="Hover to glitch"
-                >
-                  CREATIVE
+                <div className="title-line-mask">
+                  <div
+                    className={`title-word-reveal word-1 glitch-outline-title ${titleVisible ? 'word-revealed' : ''} ${isGlitching ? 'glitch-active' : ''}`}
+                    data-text="CREATIVE"
+                    onMouseEnter={() => triggerGlitchRef.current()}
+                    title="Hover to glitch"
+                  >
+                    CREATIVE
+                  </div>
                 </div>
 
-                <div
-                  className={`glitch-outline-title ${isGlitching ? 'glitch-active' : ''}`}
-                  data-text="VISUAL"
-                  onMouseEnter={() => triggerGlitchRef.current()}
-                  title="Hover to glitch"
-                >
-                  VISUAL
+                <div className="title-line-mask">
+                  <div
+                    className={`title-word-reveal word-2 glitch-outline-title ${titleVisible ? 'word-revealed' : ''} ${isGlitching ? 'glitch-active' : ''}`}
+                    data-text="VISUAL"
+                    onMouseEnter={() => triggerGlitchRef.current()}
+                    title="Hover to glitch"
+                  >
+                    VISUAL
+                  </div>
                 </div>
 
-                <div style={{ color: 'var(--text-primary)', textShadow: '0 0 25px rgba(0, 245, 212, 0.4)' }}>
-                  ART.
+                <div className="title-line-mask">
+                  <div
+                    className={`title-word-reveal word-3 ${titleVisible ? 'word-revealed' : ''}`}
+                    style={{ color: 'var(--text-primary)', textShadow: '0 0 25px rgba(0, 245, 212, 0.4)' }}
+                  >
+                    ART<span className={`art-dot ${titleVisible ? 'dot-active' : ''}`}>.</span>
+                  </div>
                 </div>
               </h2>
 
@@ -494,6 +534,77 @@ export const BentoGrid: React.FC = () => {
           .software-icon-card {
             width: clamp(42px, 11vw, 60px) !important;
             height: clamp(42px, 11vw, 60px) !important;
+          }
+        }
+
+        /* Title Reveal Animation independent of scroll drag */
+        .title-badge-reveal {
+          opacity: 0;
+          transform: translateY(14px);
+          transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: opacity, transform;
+        }
+        .title-badge-reveal.badge-in {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        .title-line-mask {
+          overflow: hidden;
+          padding: 0.05em 0.1em 0.12em 0.1em;
+          margin: -0.05em -0.1em -0.12em -0.1em;
+          display: block;
+        }
+
+        .title-word-reveal {
+          display: block;
+          opacity: 0;
+          transform: translateY(115%) rotateX(-12deg);
+          filter: blur(8px);
+          transform-origin: bottom center;
+          transition: transform 0.82s cubic-bezier(0.16, 1, 0.3, 1),
+                      opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                      filter 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: transform, opacity, filter;
+        }
+
+        .title-word-reveal.word-revealed {
+          opacity: 1;
+          transform: translateY(0) rotateX(0deg);
+          filter: blur(0px);
+        }
+
+        .title-word-reveal.word-1 {
+          transition-delay: 0.06s;
+        }
+        .title-word-reveal.word-2 {
+          transition-delay: 0.20s;
+        }
+        .title-word-reveal.word-3 {
+          transition-delay: 0.34s;
+        }
+
+        /* Pulsing accent dot on ART. */
+        .art-dot {
+          display: inline-block;
+          color: var(--accent-cyan);
+          text-shadow: 0 0 16px var(--accent-cyan), 0 0 32px rgba(0, 245, 212, 0.8);
+          transform: scale(0);
+          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.52s;
+        }
+        .art-dot.dot-active {
+          transform: scale(1);
+          animation: dotGlowPulse 3s ease-in-out infinite 1.1s;
+        }
+
+        @keyframes dotGlowPulse {
+          0%, 100% {
+            text-shadow: 0 0 16px var(--accent-cyan), 0 0 30px rgba(0, 245, 212, 0.7);
+            transform: scale(1);
+          }
+          50% {
+            text-shadow: 0 0 24px var(--accent-cyan), 0 0 42px rgba(0, 245, 212, 0.95);
+            transform: scale(1.18);
           }
         }
 
