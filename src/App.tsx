@@ -4,10 +4,11 @@ import { Preloader } from './components/Preloader';
 import { Navbar } from './components/Navbar';
 import { Hero3D } from './components/Hero3D';
 import { BentoGrid } from './components/BentoGrid';
-import { ProjectShowcase } from './components/ProjectShowcase';
-import { InteractiveLab } from './components/InteractiveLab';
+import { EducationTimeline } from './components/EducationTimeline';
+// import { ProjectShowcase } from './components/ProjectShowcase';
+// import { InteractiveLab } from './components/InteractiveLab';
 import { ExperienceTimeline } from './components/ExperienceTimeline';
-import { ContactSection } from './components/ContactSection';
+// import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 
 export const App: React.FC = () => {
@@ -66,20 +67,23 @@ export const App: React.FC = () => {
         {/* 1. Hero 3D */}
         <Hero3D mode={mode} />
 
-        {/* 2. Bento Grid & Philosophy */}
+        {/* 2. Bento Grid & Philosophy (About) */}
         <BentoGrid />
 
-        {/* 3. Featured Projects Showcase */}
-        <ProjectShowcase />
+        {/* 3. Education Timeline (Branching Time-Tree) */}
+        <EducationTimeline />
 
-        {/* 4. Interactive Creative Lab */}
-        <InteractiveLab mode={mode} />
-
-        {/* 5. Experience Milestones */}
+        {/* 4. Experience Milestones */}
         <ExperienceTimeline />
 
-        {/* 6. Contact & Supabase Inquiries */}
-        <ContactSection />
+        {/* 5. Featured Projects Showcase */}
+        {/* <ProjectShowcase /> */}
+
+        {/* 6. Interactive Creative Lab */}
+        {/* <InteractiveLab mode={mode} /> */}
+
+        {/* 7. Contact & Supabase Inquiries */}
+        {/* <ContactSection /> */}
       </main>
 
       {/* Footer & Telemetry */}

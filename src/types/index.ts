@@ -14,6 +14,18 @@ export interface Project {
   highlights: string[];
 }
 
+export interface Education {
+  id: string;
+  degree: string;
+  institution: string;
+  major?: string;
+  period: string;
+  statusBadge?: string;
+  description: string;
+  highlights?: string[];
+  current?: boolean;
+}
+
 export interface Experience {
   id: string;
   role: string;
@@ -28,6 +40,15 @@ export interface Experience {
 export interface SkillCategory {
   title: string;
   skills: { name: string; level: number; icon?: string; badge?: string }[];
+}
+
+export interface SoftwareTool {
+  id: string;
+  name: string;
+  category: string;
+  icon3D: string;
+  accentColor: string;
+  description: string;
 }
 
 export type PerformanceMode = 'ultra' | 'eco';

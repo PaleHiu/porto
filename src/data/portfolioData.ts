@@ -1,4 +1,4 @@
-import type { Project, Experience, SkillCategory } from '../types';
+import type { Project, Experience, SkillCategory, Education, SoftwareTool } from '../types';
 
 export const PERSONAL_INFO = {
   name: 'Arif Ahmad Muzakky',
@@ -9,10 +9,10 @@ export const PERSONAL_INFO = {
   location: 'Indonesia (GMT+7)',
   bio: 'Halo, saya Arif Ahmad Muzakky, seorang mahasiswa program studi D3 Manajemen Informatika di Universitas Lampung. Saya memiliki ketertarikan yang mendalam terhadap dunia estetika visual. Mulai dari Desain Grafis, UI/UX Design, Fotografi, hingga Videografi dan proses editing—saya selalu antusias dalam menciptakan maupun menikmati karya visual yang memanjakan mata.',
   status: 'Available for UI/UX & Design Projects',
-  email: 'arif.muzakky@gmail.com',
-  whatsapp: 'https://wa.me/6281234567890?text=Hello%20Arif,%20I%20am%20interested%20in%20discussing%20a%20design%20project',
-  instagram: 'https://instagram.com/arifmuzakky',
-  tiktok: 'https://tiktok.com/@arifmuzakky',
+  email: 'muzakky098@gmail.com',
+  whatsapp: 'https://wa.me/62895413066835?text=Halo%20Arif,%20saya%20tertarik%20untuk%20mendiskusikan%20proyek%20desain',
+  instagram: 'https://instagram.com/mzak.ky_',
+  tiktok: '',
   github: 'https://github.com/arifmuzakky',
   linkedin: 'https://linkedin.com/in/arifmuzakky',
   twitter: 'https://x.com/arifmuzakky',
@@ -131,43 +131,123 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
 export const EXPERIENCES: Experience[] = [
   {
     id: 'exp-1',
-    role: 'Lead Creative Frontend Engineer',
-    company: 'Aether Digital Studio',
-    period: '2024 — Present',
-    location: 'Remote',
+    role: 'Kerja Praktik (Kuliah)',
+    company: 'Balai Penjaminan Mutu Pendidikan Provinsi Lampung',
+    period: '2026 (40 Hari)',
+    location: 'Bandar Lampung',
     description: [
-      'Architected 10+ high-profile luxury web experiences with Three.js and React, driving a 42% increase in visitor engagement.',
-      'Pioneered an Adaptive Device Tiering engine that reduced mobile memory consumption by 65% on entry-level Android devices.',
-      'Orchestrated automated CI/CD pipelines to Vercel Edge with zero-downtime rollouts.'
+      'Ikut serta kerja tim bersama teman sekelompok bagian memegang tanggung jawab Front-End & Redesain UI/UX untuk Pengembangan sebuah Website Balai Penjaminan Mutu Pendidikan Provinsi Lampung.'
     ],
-    tech: ['React', 'Three.js', 'TypeScript', 'GLSL', 'Vercel', 'Tailwind/CSS'],
+    tech: ['Figma', 'VS Code', 'React', 'Node.js'],
     featured: true
   },
   {
     id: 'exp-2',
-    role: 'Frontend UI/UX Developer',
-    company: 'Nexus Interactive Systems',
-    period: '2022 — 2024',
-    location: 'Hybrid',
+    role: 'Organisasi Mahasiswa',
+    company: 'Himpunan Mahasiswa Ilmu Komputer (ILKOM)',
+    period: '2024-2025',
+    location: 'Universitas Lampung (UNILA)',
     description: [
-      'Spearheaded the design system unification for 4 enterprise FinTech web applications, achieving 100/100 Lighthouse performance.',
-      'Constructed high-frequency real-time stock dashboards powered by WebSockets and Canvas 2D.',
-      'Integrated Supabase PostgreSQL authentication, storage, and row-level security for client-facing portals.'
+      'Ikut serta dalam melakukan pengambilan Video pada proses pembuatan Video Pengenalan Kepengurusan Anggota Himpunan Mahasiswa Ilmu Komputer 2023/2024.',
+      'Ikut serta dalam pengambilan sebuah Foto untuk setiap Anggota dan Pimpinan pada Himpunan Mahasiswa Ilmu Komputer 2023/2024.',
+      'Dipercaya dalam melakukan dokumentasi pada setiap Acara ataupun Program Kerja yang sedang berlangsung.',
+      'Menjadi penanggung jawab pada Divisi Youtube.',
+      'Melakukan beberapa Pengeditan Video untuk konten YouTube Himpunan.'
     ],
-    tech: ['React', 'Next.js', 'Supabase', 'TypeScript', 'Chart.js', 'CSS Modules'],
-    featured: false
+    tech: ['Figma', 'Davinci Resolve', 'Filmora', 'Lightroom'],
+    featured: true
   },
   {
     id: 'exp-3',
-    role: 'Junior Creative Web Developer',
-    company: 'Vanguard Media Labs',
-    period: '2021 — 2022',
-    location: 'Indonesia',
+    role: 'Freelance',
+    company: 'PT Agro Multiguna Sejati (AMS)',
+    period: '2025 (1-2 Bulan)',
+    location: 'Remote',
     description: [
-      'Developed interactive marketing microsites and 3D product previews for international brand launches.',
-      'Optimized asset loading strategies, reducing initial page payload from 4.8MB to under 400KB.'
+      'Membuat Desain Grafis berupa sebuah Poster/Pamflet produk pupuk pada Media Sosial Instagram @merdekasuryatani',
     ],
-    tech: ['JavaScript', 'HTML5/Canvas', 'CSS3 Animations', 'Three.js', 'Vercel'],
+    tech: ['Figma', 'Lightroom'],
     featured: false
+  },
+  {
+    id: 'exp-4',
+    role: 'Praktik Kerja Lapangan (SMK)',
+    company: 'PT Perkebunan Nusantara VII',
+    period: '2023 (6 Bulan)',
+    location: 'Bandar Lampung',
+    description: [
+      'Ikut serta turun kelapangan untuk pemasangan Kamera CCTV pada beberapa UNIT PT Perkebunan Nusantara VII',
+      'Pernah ikut serta dalam proses melakukan Pemetaan Lahan (Drone Mapping) atau Survei Udara (Aerial Survey) di berbagai lahan milik PT Perkebunan Nusantara VII.'
+    ],
+    tech: ['Drone Mapping', 'Instalasi CCTV'],
+    featured: false
+  }
+];
+
+export const EDUCATIONS: Education[] = [
+  {
+    id: 'edu-1',
+    degree: 'KULIAH',
+    institution: 'Universitas Lampung (Unila)',
+    major: 'D3 Manajemen Informatika',
+    period: '2024 — Sekarang',
+    statusBadge: 'Sedang Ditempuh (Active)',
+    description: 'Seorang Mahasiswa Kupu-Kupu (Kuliah Pulang) yang berusaha ingin mendapatkan IPK 4. Namun, kenyataannya tidak begitu.',
+    current: true
+  },
+  {
+    id: 'edu-2',
+    degree: 'SMK',
+    institution: 'SMK Negeri 2 Bandar Lampung',
+    major: 'Teknik Komputer Jaringan',
+    period: '2021 — 2024',
+    statusBadge: 'Lulus (Graduated)',
+    description: 'Hanya Seorang siswa yang berusaha untuk memastikan kabel LAN terhubung, namun tidak dengan dia yang hubungannya tidak saling terhubung. Aww',
+    current: false
+  },
+  {
+    id: 'edu-3',
+    degree: 'SMP',
+    institution: 'SMP Muhammadiyah 3 Bandar Lampung',
+    major: 'Islami',
+    period: '2018 — 2021',
+    statusBadge: 'Lulus (Graduated)',
+    description: 'Hanya seorang siswa yang berusaha untuk selalu taat dan tawaqal kepada Allah SWT. Dan menjaga amanah orang tua, tapi ya gitu deh....',
+    current: false
+  }
+];
+
+export const SOFTWARE_TOOLS: SoftwareTool[] = [
+  {
+    id: 'figma',
+    name: 'Figma',
+    category: 'UI/UX Design',
+    icon3D: '/software/figma-3d.png',
+    accentColor: '#f24e1e',
+    description: 'Interface & User Experience Prototyping'
+  },
+  {
+    id: 'davinci',
+    name: 'DaVinci Resolve',
+    category: 'Color Grading & Video',
+    icon3D: '/software/davinci-3d.png',
+    accentColor: '#ff4c60',
+    description: 'Cinematic Color Grading & Motion Editing'
+  },
+  {
+    id: 'filmora',
+    name: 'Wondershare Filmora',
+    category: 'Video Editing',
+    icon3D: '/software/filmora-3d.png',
+    accentColor: '#00f5d4',
+    description: 'Creative Video Assembly & Visual Effects'
+  },
+  {
+    id: 'lightroom',
+    name: 'Adobe Lightroom',
+    category: 'Photo Editing',
+    icon3D: '/software/lightroom-3d.png',
+    accentColor: '#31a8ff',
+    description: 'Color Toning & High-End Photography Post-Processing'
   }
 ];

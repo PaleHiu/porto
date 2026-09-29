@@ -1,14 +1,14 @@
 import React from 'react';
-import { ArrowUp, Zap } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 import { WhatsappIcon, InstagramIcon, TiktokIcon } from './Icons';
 import type { DeviceStats } from '../types';
 import { PERSONAL_INFO } from '../data/portfolioData';
 
 interface FooterProps {
-  stats: DeviceStats;
+  stats?: DeviceStats;
 }
 
-export const Footer: React.FC<FooterProps> = ({ stats }) => {
+export const Footer: React.FC<FooterProps> = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -28,14 +28,14 @@ export const Footer: React.FC<FooterProps> = ({ stats }) => {
             display: 'flex',
             flexWrap: 'wrap',
             justifyContent: 'space-between',
-            alignItems: 'flex-start',
+            alignItems: 'center',
             gap: '2.5rem',
             marginBottom: '3rem'
           }}
         >
-          {/* Left Column: Brand */}
-          <div style={{ maxWidth: '400px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
+          {/* Left Column: Brand & Socials */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
               <div
                 style={{
                   width: '32px',
@@ -52,14 +52,15 @@ export const Footer: React.FC<FooterProps> = ({ stats }) => {
               >
                 A
               </div>
-              <span style={{ fontWeight: 800, fontSize: '1.2rem', fontFamily: 'var(--font-heading)' }}>
-                Arif <span style={{ color: 'var(--accent-cyan)' }}>.</span>
-              </span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontWeight: 800, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', lineHeight: 1.2 }}>
+                  Arif <span style={{ color: 'var(--accent-cyan)' }}>.</span>
+                </span>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                  {PERSONAL_INFO.role}
+                </span>
+              </div>
             </div>
-
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
-              Obsessively engineered for visual prestige, micro-animations, and fluid 60 FPS performance on both desktop workstations and entry-level mobile devices.
-            </p>
 
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <a
@@ -118,6 +119,7 @@ export const Footer: React.FC<FooterProps> = ({ stats }) => {
               >
                 <InstagramIcon size={18} />
               </a>
+              {PERSONAL_INFO.tiktok && (
               <a
                 href={PERSONAL_INFO.tiktok}
                 target="_blank"
@@ -146,39 +148,7 @@ export const Footer: React.FC<FooterProps> = ({ stats }) => {
               >
                 <TiktokIcon size={18} />
               </a>
-            </div>
-          </div>
-
-          {/* Center Column: Telemetry & Performance Info */}
-          <div
-            style={{
-              background: 'rgba(10, 14, 22, 0.6)',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
-              borderRadius: '1rem',
-              padding: '1.25rem 1.5rem',
-              minWidth: '260px'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)', marginBottom: '0.75rem' }}>
-              <Zap size={14} />
-              <span>LIVE DEVICE TELEMETRY</span>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Detected CPU Cores:</span>
-                <span style={{ color: 'var(--text-primary)' }}>{stats.cores} Logical Cores</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Render Refresh Rate:</span>
-                <span style={{ color: 'var(--accent-cyan)' }}>{stats.fps} FPS</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Rendering Tier:</span>
-                <span style={{ color: stats.mode === 'ultra' ? 'var(--accent-cyan)' : '#4ade80' }}>
-                  {stats.mode === 'ultra' ? 'Three.js 3D WebGL' : '2.5D CSS Accelerated'}
-                </span>
-              </div>
+              )}
             </div>
           </div>
 
@@ -204,7 +174,7 @@ export const Footer: React.FC<FooterProps> = ({ stats }) => {
               onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--accent-cyan)')}
               onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)')}
             >
-              <span>Back to Apex</span>
+              <span>Kembali ke Atas</span>
               <ArrowUp size={16} />
             </button>
           </div>
@@ -215,23 +185,41 @@ export const Footer: React.FC<FooterProps> = ({ stats }) => {
           style={{
             display: 'flex',
             flexWrap: 'wrap',
-            justifyContent: 'space-between',
+            justifyContent: 'center',
             alignItems: 'center',
             gap: '1rem',
             paddingTop: '2rem',
             borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-            fontSize: '0.8rem',
+            fontSize: '0.85rem',
             color: 'var(--text-muted)'
           }}
         >
-          <div>
-            © {new Date().getFullYear()} Arif Ahmad Muzakky. All rights reserved. Zero-cost production ready on Vercel & Supabase.
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <span>Crafted with Three.js, React & Obsidian Dark</span>
+          <div style={{ textAlign: 'center' }}>
+            © {new Date().getFullYear()} {PERSONAL_INFO.name}. All rights reserved.
           </div>
         </div>
       </div>
+
+      {/* Mobile Responsive Styles */}
+      <style>{`
+        @media (max-width: 960px) {
+          footer .container > div:first-child {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: clamp(1.5rem, 5vw, 2.5rem) !important;
+          }
+          footer #back-to-top-btn {
+            font-size: clamp(0.72rem, 3vw, 0.82rem) !important;
+            padding: clamp(0.55rem, 2.5vw, 0.75rem) clamp(1rem, 4.5vw, 1.5rem) !important;
+          }
+          footer {
+            padding: clamp(2rem, 7vw, 4rem) 0 clamp(1.25rem, 4vw, 2rem) !important;
+          }
+          footer .container > div:last-child {
+            font-size: clamp(0.75rem, 3vw, 0.85rem) !important;
+          }
+        }
+      `}</style>
     </footer>
   );
 };

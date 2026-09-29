@@ -61,6 +61,8 @@ html {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
 body {
@@ -71,21 +73,22 @@ body {
     radial-gradient(ellipse 60% 40% at 80% 60%, rgba(59, 130, 246, 0.04), transparent 60%),
     var(--bg-primary);
   line-height: 1.6;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
-/* Custom Luxury Scrollbar */
+/* Sembunyikan scrollbar bawaan browser untuk Chrome, Safari, Edge, Opera */
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar,
 ::-webkit-scrollbar {
-  width: 7px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-primary);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-cyan);
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
 }
 
 ::selection {
@@ -103,10 +106,24 @@ body {
   padding-right: 1.5rem;
 }
 
-@media (max-width: 640px) {
+/* ====== DESKTOP LOCK (≥961px): semua ukuran desktop tidak berubah ====== */
+@media (min-width: 961px) {
   .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* ====== MOBILE RESPONSIVE (≤960px): ukuran dinamis fluid ====== */
+@media (max-width: 960px) {
+  html {
+    font-size: clamp(13px, 3.8vw, 16px); /* Fluid base font: 13px@300px → 16px@420px */
+  }
+
+  .container {
+    padding-left: clamp(0.85rem, 4vw, 1.25rem);
+    padding-right: clamp(0.85rem, 4vw, 1.25rem);
+    min-width: 0;
   }
 }
 
@@ -116,11 +133,12 @@ body {
   position: relative;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 960px) {
   .section {
-    padding: 4rem 0;
+    padding: clamp(2.5rem, 8vw, 4rem) 0;
   }
 }
+
 
 /* Typography Utilities */
 .heading-display {

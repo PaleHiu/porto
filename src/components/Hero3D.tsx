@@ -23,6 +23,41 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
   const [glitchName, setGlitchName] = useState(PERSONAL_INFO.name);
   const [isGlitching, setIsGlitching] = useState(false);
 
+  // Identity Badge Entrance & Exit Animation State ('hidden' | 'active' | 'exiting')
+  const [badgeState, setBadgeState] = useState<'hidden' | 'active' | 'exiting'>('hidden');
+
+  // Bubble Chat Entrance & Exit Animation State ('hidden' | 'active' | 'exiting')
+  const [bubble1State, setBubble1State] = useState<'hidden' | 'active' | 'exiting'>('hidden');
+  const [bubble2State, setBubble2State] = useState<'hidden' | 'active' | 'exiting'>('hidden');
+
+  useEffect(() => {
+    // Stage 3 (Portrait) completes fully at 0.66
+    // Badge bounces in with slight delay at 0.67
+    // Bubble 1 only triggers at 0.78 (long deliberate gap after portrait & badge are settled)
+    // Bubble 2 only triggers at 0.90 (heavy extra scroll gap after Bubble 1)
+    const BADGE_THRESHOLD = 0.67;
+    const BUBBLE1_THRESHOLD = 0.78;
+    const BUBBLE2_THRESHOLD = 0.90;
+
+    if (scrollProgress >= BADGE_THRESHOLD) {
+      setBadgeState('active');
+    } else {
+      setBadgeState((prev) => (prev === 'active' ? 'exiting' : prev));
+    }
+
+    if (scrollProgress >= BUBBLE1_THRESHOLD) {
+      setBubble1State('active');
+    } else {
+      setBubble1State((prev) => (prev === 'active' ? 'exiting' : prev));
+    }
+
+    if (scrollProgress >= BUBBLE2_THRESHOLD) {
+      setBubble2State('active');
+    } else {
+      setBubble2State((prev) => (prev === 'active' ? 'exiting' : prev));
+    }
+  }, [scrollProgress]);
+
   useEffect(() => {
     let timeoutId: number;
     let animFrameId: number;
@@ -32,7 +67,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
       setIsGlitching(true);
       const original = PERSONAL_INFO.name;
       let frame = 0;
-      
+
       const update = () => {
         let output = '';
         for (let i = 0; i < original.length; i++) {
@@ -46,9 +81,9 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
             output += original[i];
           }
         }
-        
+
         setGlitchName(output);
-        
+
         if (frame < 16) {
           frame++;
           animFrameId = requestAnimationFrame(update);
@@ -58,7 +93,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
           timeoutId = window.setTimeout(triggerGlitch, 8000);
         }
       };
-      
+
       update();
     };
 
@@ -247,8 +282,8 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
         const isMobile = window.innerWidth <= 960;
         const initialX = isMobile ? 0 : 2.4;
         // TAHAP 2: Ring STRICTLY stays on the right during Stage 1 and the pause buffer (currentScroll <= 0.24)
-        // Moves smoothly from initialX (2.4) to center (0.0) between 0.24 and 0.54
-        const rawRingProgress = Math.min(1, Math.max(0, (currentScroll - 0.27) / 0.30));
+        // Moves smoothly from initialX (2.4) to center (0.0) between 0.24 and 0.48
+        const rawRingProgress = Math.min(1, Math.max(0, (currentScroll - 0.24) / 0.24));
         // Smooth ease-in-out S-curve for ring motion
         const smoothRingT = rawRingProgress * rawRingProgress * (3 - 2 * rawRingProgress);
 
@@ -329,29 +364,16 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
   // JEDA / BUFFER TAHAP 1 & 2:
   // Antara 0.12 dan 0.24, teks sudah 100% hilang, dan 3D ring masih terkunci 100% diam di kanan.
 
-  // TAHAP 3: Formal portrait reveals ONLY AFTER Stage 2 (Ring fully centered at 0.54)
-  // Reveals smoothly between 0.58 and 0.78
-  const rawFormalProgress = Math.min(1, Math.max(0, (scrollProgress - 0.58) / 0.20));
-  // Silky smooth ease-out curve for the rising animation
-  const riseCurve = 1 - Math.pow(1 - rawFormalProgress, 2.2);
-  const formalOpacity = rawFormalProgress > 0 ? Math.min(1, Math.pow(rawFormalProgress, 0.6) * 1.25) : 0;
-  const formalScale = 0.90 + rawFormalProgress * 0.28; // Scales smoothly from 0.90 up to 1.18
-  const formalTranslateY = Math.round((1 - riseCurve) * 220); // Meluncur anggun naik 220px dari bawah
+  // TAHAP 3: Formal portrait reveals AFTER Stage 2 (Ring fully centered at 0.48)
+  // Physically starts OUT OF FRAME below viewport (105%), then rises smoothly into frame between 0.50 and 0.66
+  const rawFormalProgress = Math.min(1, Math.max(0, (scrollProgress - 0.50) / 0.16));
+  // Smoothstep S-curve for organic physical ascent from out-of-frame
+  const riseCurve = rawFormalProgress * rawFormalProgress * (3 - 2 * rawFormalProgress);
+  const formalScale = 0.94 + riseCurve * 0.22; // Scales smoothly from 0.94 up to 1.16
+  const formalTranslateYPercent = (1 - riseCurve) * 105; // 105% ensures 100% of the image is completely below viewport (out of frame)
 
-  // TAHAP 4: Bubble Chat Pop-ups AFTER Stage 3 (Settles after formal portrait is fully in place)
-  // Bubble 1 (Left - Shape Line 1) pops in between scrollProgress 0.78 and 0.88
-  const rawBubble1 = Math.min(1, Math.max(0, (scrollProgress - 0.78) / 0.10));
-  const bubble1Progress = 1 - Math.pow(1 - rawBubble1, 2.5);
-  const bubble1Opacity = rawBubble1 > 0 ? Math.min(1, rawBubble1 * 1.8) : 0;
-  const bubble1Scale = rawBubble1 > 0 ? 0.6 + bubble1Progress * 0.4 : 0.6;
-  const bubble1TranslateY = (1 - bubble1Progress) * 25;
-
-  // Bubble 2 (Right - Shape Line 2) pops in between scrollProgress 0.84 and 0.94
-  const rawBubble2 = Math.min(1, Math.max(0, (scrollProgress - 0.84) / 0.10));
-  const bubble2Progress = 1 - Math.pow(1 - rawBubble2, 2.5);
-  const bubble2Opacity = rawBubble2 > 0 ? Math.min(1, rawBubble2 * 1.8) : 0;
-  const bubble2Scale = rawBubble2 > 0 ? 0.6 + bubble2Progress * 0.4 : 0.6;
-  const bubble2TranslateY = (1 - bubble2Progress) * 25;
+  // TAHAP 4: Bubble Chat Pop-ups AFTER Stage 3
+  // Managed by bubble1State (triggers at 0.78 after human is settled) and bubble2State (triggers at 0.90 after heavy scroll gap)
 
   return (
     <div
@@ -360,7 +382,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
       className="hero-pinned-wrapper"
       style={{
         position: 'relative',
-        height: '320vh' // Generous scroll track for smooth 4-phase choreography
+        height: '400vh' // Heavy, luxurious scroll track for perfectly paced choreography
       }}
     >
       <section
@@ -470,7 +492,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
                 }}
               >
                 <a href="#projects" className="btn-primary" id="hero-projects-cta">
-                  <span>Explore Design Works</span>
+                  <span>Jelajahi Karya Desain</span>
                   <ArrowDown size={16} />
                 </a>
               </div>
@@ -542,6 +564,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
                 >
                   <InstagramIcon size={16} />
                 </a>
+                {PERSONAL_INFO.tiktok && (
                 <a
                   href={PERSONAL_INFO.tiktok}
                   target="_blank"
@@ -570,6 +593,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
                 >
                   <TiktokIcon size={16} />
                 </a>
+                )}
               </div>
             </div>
 
@@ -693,9 +717,8 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
           </div>
         </div>
 
-        {/* ================= 2. DYNAMIC FORMAL PORTRAIT REVEAL VIEW ================= */}
-        {/* ================= 2. DYNAMIC FORMAL PORTRAIT REVEAL VIEW ================= */}
-        {/* Anchored at bottom: 0 so the portrait naturally rises flush from the screen edge with no cut-off artifacts */}
+        {/* ================= 2. DYNAMIC FORMAL PORTRAIT REVEAL VIEW (SOLID OPACITY) ================= */}
+        {/* Anchored at bottom: 0 and starts 100% out of frame (translateY 105%) so it rises smoothly as user scrolls */}
         <div
           className="hero-formal-reveal-view"
           style={{
@@ -706,13 +729,12 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'flex-end',
-            opacity: formalOpacity,
-            transform: `translate3d(0, ${formalTranslateY}px, 0) scale3d(${formalScale}, ${formalScale}, 1)`,
+            opacity: 1,
+            transform: `translate3d(0, ${formalTranslateYPercent}%, 0) scale3d(${formalScale}, ${formalScale}, 1)`,
             transformOrigin: 'bottom center',
-            visibility: formalOpacity > 0 ? 'visible' : 'hidden',
-            pointerEvents: formalOpacity > 0.5 ? 'auto' : 'none',
-            transition: 'opacity 0.08s linear, transform 0.08s linear',
-            willChange: 'opacity, transform',
+            visibility: scrollProgress > 0.15 ? 'visible' : 'hidden',
+            pointerEvents: rawFormalProgress > 0.8 ? 'auto' : 'none',
+            willChange: 'transform',
             overflow: 'hidden'
           }}
         >
@@ -726,10 +748,11 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
               width: 'min(780px, 92vw)',
               height: 'min(780px, 92vw)',
               borderRadius: '50%',
-              background: `radial-gradient(circle, rgba(0, 245, 212, ${0.30 * formalOpacity}) 0%, rgba(59, 130, 246, ${0.15 * formalOpacity}) 45%, transparent 70%)`,
+              background: 'radial-gradient(circle, rgba(0, 245, 212, 0.32) 0%, rgba(59, 130, 246, 0.16) 45%, transparent 70%)',
               filter: 'blur(58px)',
               pointerEvents: 'none',
-              zIndex: -1
+              zIndex: -1,
+              opacity: riseCurve
             }}
           />
 
@@ -759,53 +782,48 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
               }}
             />
           </div>
+        </div>
 
-          {/* Floating Minimalist Identity Badge Over Lower Torso (Positioned cleanly above Continue Scrolling) */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '72px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: 10,
-              textAlign: 'center',
-              background: 'rgba(9, 12, 18, 0.90)',
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
-              border: '1px solid rgba(0, 245, 212, 0.35)',
-              borderRadius: '9999px',
-              padding: '0.65rem 2.25rem',
-              boxShadow: '0 16px 36px rgba(0, 0, 0, 0.85), 0 0 25px rgba(0, 245, 212, 0.2)',
-              display: 'inline-flex',
-              flexDirection: 'column',
-              alignItems: 'center'
-            }}
-          >
-            <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
-              {PERSONAL_INFO.name}
-            </div>
-            <div className="shimmer-text" style={{ fontSize: '0.78rem', fontFamily: 'var(--font-mono)', fontWeight: 600, marginTop: '0.15rem', letterSpacing: '0.04em' }}>
-              {PERSONAL_INFO.role}
-            </div>
+        {/* ================= IDENTITY BADGE (BOUNCES IN AFTER IMAGE RISES) ================= */}
+        <div
+          className={`hero-identity-badge badge-state-${badgeState}`}
+          style={{
+            position: 'absolute',
+            bottom: '72px',
+            left: '50%',
+            zIndex: 18,
+            textAlign: 'center',
+            background: 'rgba(9, 12, 18, 0.90)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(0, 245, 212, 0.35)',
+            borderRadius: '9999px',
+            padding: '0.65rem 2.25rem',
+            boxShadow: '0 16px 36px rgba(0, 0, 0, 0.85), 0 0 25px rgba(0, 245, 212, 0.2)',
+            display: 'inline-flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            transformOrigin: 'bottom center'
+          }}
+        >
+          <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+            {PERSONAL_INFO.name}
+          </div>
+          <div className="shimmer-text" style={{ fontSize: '0.78rem', fontFamily: 'var(--font-mono)', fontWeight: 600, marginTop: '0.15rem', letterSpacing: '0.04em' }}>
+            {PERSONAL_INFO.role}
           </div>
         </div>
 
         {/* ================= BUBBLE CHAT POP UP 1 (LEFT - SHAPE LINE 1) ================= */}
         <div
-          className="hero-bubble-chat hero-bubble-chat-1"
+          className={`hero-bubble-chat hero-bubble-chat-1 bubble-state-${bubble1State}`}
           style={{
             position: 'absolute',
             right: 'calc(50% + clamp(130px, 11vw, 200px))',
             top: 'clamp(26%, 28vh, 36%)',
             maxWidth: 'clamp(310px, 27vw, 410px)',
             zIndex: 22,
-            opacity: bubble1Opacity,
-            transform: `translate3d(0, ${bubble1TranslateY}px, 0) scale3d(${bubble1Scale}, ${bubble1Scale}, 1)`,
-            transformOrigin: 'bottom right',
-            visibility: bubble1Opacity > 0 ? 'visible' : 'hidden',
-            transition: 'opacity 0.08s linear, transform 0.08s linear',
-            pointerEvents: bubble1Opacity > 0.5 ? 'auto' : 'none',
-            willChange: 'opacity, transform'
+            transformOrigin: 'bottom right'
           }}
         >
           <div
@@ -869,20 +887,14 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
 
         {/* ================= BUBBLE CHAT POP UP 2 (RIGHT - SHAPE LINE 2) ================= */}
         <div
-          className="hero-bubble-chat hero-bubble-chat-2"
+          className={`hero-bubble-chat hero-bubble-chat-2 bubble-state-${bubble2State}`}
           style={{
             position: 'absolute',
             left: 'calc(50% + clamp(130px, 11vw, 200px))',
             top: 'clamp(44%, 48vh, 56%)',
             maxWidth: 'clamp(330px, 29vw, 440px)',
             zIndex: 22,
-            opacity: bubble2Opacity,
-            transform: `translate3d(0, ${bubble2TranslateY}px, 0) scale3d(${bubble2Scale}, ${bubble2Scale}, 1)`,
-            transformOrigin: 'bottom left',
-            visibility: bubble2Opacity > 0 ? 'visible' : 'hidden',
-            transition: 'opacity 0.08s linear, transform 0.08s linear',
-            pointerEvents: bubble2Opacity > 0.5 ? 'auto' : 'none',
-            willChange: 'opacity, transform'
+            transformOrigin: 'bottom left'
           }}
         >
           <div
@@ -994,52 +1006,305 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
               textTransform: 'uppercase'
             }}
           >
-            {scrollProgress < 0.85 ? 'Scroll to Reveal' : 'Continue Scrolling ↓'}
+            {scrollProgress < 0.90 ? 'Scroll to Reveal' : 'Continue Scrolling ↓'}
           </span>
         </div>
 
-        {/* Responsive Breakpoint Styles */}
+        {/* Responsive Breakpoint & Dynamic Bubble Animation Styles */}
         <style>{`
-          @media (max-width: 960px) {
-            .hero-pinned-wrapper {
-              height: 260vh !important; /* Balanced track on mobile for smooth 4-phase scroll */
+            /* --- Identity Badge Bounce & Shrink Animations --- */
+            .hero-identity-badge {
+              will-change: transform, opacity;
             }
-            .hero-split-grid {
-              grid-template-columns: 1fr !important;
-              gap: 2.25rem !important;
-              text-align: center !important;
+
+            .hero-identity-badge.badge-state-hidden {
+              opacity: 0;
+              transform: translateX(-50%) translateY(24px) scale(0.3);
+              visibility: hidden;
+              pointer-events: none;
             }
-            .hero-content-col {
-              grid-column: span 12 !important;
-              display: flex !important;
-              flex-direction: column !important;
-              align-items: center !important;
+
+            .hero-identity-badge.badge-state-active {
+              visibility: visible;
+              pointer-events: auto;
+              animation: badgeBounce 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
             }
-            .hero-photo-col {
-              grid-column: span 12 !important;
-              order: -1 !important; /* On mobile, photo appears right above the title */
-              margin-bottom: 0.5rem !important;
+
+            .hero-identity-badge.badge-state-exiting {
+              pointer-events: none;
+              animation: badgeShrink 0.32s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             }
-            .hero-photo-col > div {
-              max-width: 270px !important;
+
+            @keyframes badgeBounce {
+              0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(24px) scale(0.3);
+              }
+              48% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(-6px) scale(1.08);
+              }
+              70% {
+                transform: translateX(-50%) translateY(3px) scale(0.96);
+              }
+              86% {
+                transform: translateX(-50%) translateY(-1px) scale(1.015);
+              }
+              100% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0px) scale(1);
+              }
             }
-            .formal-portrait-img {
-              max-height: 65vh !important;
+
+            @keyframes badgeShrink {
+              0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0px) scale(1);
+              }
+              28% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(-4px) scale(1.05);
+              }
+              100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(24px) scale(0.25);
+                visibility: hidden;
+              }
             }
-            .hero-bubble-chat-1 {
-              right: auto !important;
-              left: 14px !important;
-              top: 14% !important;
-              max-width: 250px !important;
+
+            /* --- Natural Dynamic Bubble Chat Bounce & Shrink Animations --- */
+            .hero-bubble-chat {
+              will-change: transform, opacity;
             }
-            .hero-bubble-chat-2 {
-              left: auto !important;
-              right: 14px !important;
-              top: 56% !important;
-              max-width: 260px !important;
+
+            .hero-bubble-chat.bubble-state-hidden {
+              opacity: 0;
+              transform: translateY(28px) scale(0.2);
+              visibility: hidden;
+              pointer-events: none;
             }
-          }
-        `}</style>
+
+            /* Bubble 1 (Left - Mindset) Enter / Exit */
+            .hero-bubble-chat-1.bubble-state-active {
+              visibility: visible;
+              pointer-events: auto;
+              animation: bubbleBounceLeft 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+            }
+
+            .hero-bubble-chat-1.bubble-state-exiting {
+              pointer-events: none;
+              animation: bubbleShrinkLeft 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            }
+
+            /* Bubble 2 (Right - Principle) Enter / Exit */
+            .hero-bubble-chat-2.bubble-state-active {
+              visibility: visible;
+              pointer-events: auto;
+              animation: bubbleBounceRight 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+            }
+
+            .hero-bubble-chat-2.bubble-state-exiting {
+              pointer-events: none;
+              animation: bubbleShrinkRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            }
+
+            .hero-bubble-chat.bubble-state-active:hover {
+              transform: translateY(-4px) scale(1.02);
+              transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+            }
+
+            /* Natural Entrance Spring Bounce Keyframes */
+            @keyframes bubbleBounceLeft {
+              0% {
+                opacity: 0;
+                transform: translateY(32px) scale(0.35) rotate(-2deg);
+              }
+              48% {
+                opacity: 1;
+                transform: translateY(-6px) scale(1.08) rotate(0.8deg);
+              }
+              70% {
+                transform: translateY(3px) scale(0.96) rotate(-0.4deg);
+              }
+              86% {
+                transform: translateY(-1px) scale(1.015) rotate(0.2deg);
+              }
+              100% {
+                opacity: 1;
+                transform: translateY(0px) scale(1) rotate(0deg);
+              }
+            }
+
+            @keyframes bubbleBounceRight {
+              0% {
+                opacity: 0;
+                transform: translateY(32px) scale(0.35) rotate(2deg);
+              }
+              48% {
+                opacity: 1;
+                transform: translateY(-6px) scale(1.08) rotate(-0.8deg);
+              }
+              70% {
+                transform: translateY(3px) scale(0.96) rotate(0.4deg);
+              }
+              86% {
+                transform: translateY(-1px) scale(1.015) rotate(-0.2deg);
+              }
+              100% {
+                opacity: 1;
+                transform: translateY(0px) scale(1) rotate(0deg);
+              }
+            }
+
+            /* Natural Exit Elastic Shrink Keyframes */
+            @keyframes bubbleShrinkLeft {
+              0% {
+                opacity: 1;
+                transform: translateY(0px) scale(1) rotate(0deg);
+              }
+              28% {
+                opacity: 1;
+                transform: translateY(-4px) scale(1.05) rotate(0.8deg);
+              }
+              100% {
+                opacity: 0;
+                transform: translateY(28px) scale(0.2) rotate(-2.5deg);
+                visibility: hidden;
+              }
+            }
+
+            @keyframes bubbleShrinkRight {
+              0% {
+                opacity: 1;
+                transform: translateY(0px) scale(1) rotate(0deg);
+              }
+              28% {
+                opacity: 1;
+                transform: translateY(-4px) scale(1.05) rotate(-0.8deg);
+              }
+              100% {
+                opacity: 0;
+                transform: translateY(28px) scale(0.2) rotate(2.5deg);
+                visibility: hidden;
+              }
+            }
+
+            @media (max-width: 960px) {
+              .hero-pinned-wrapper {
+                height: 320vh !important;
+              }
+
+              /* Hero initial view layout */
+              .hero-split-grid {
+                grid-template-columns: 1fr !important;
+                gap: 0 !important;
+                text-align: center !important;
+                padding-top: clamp(1rem, 3vh, 2rem) !important;
+              }
+              .hero-content-col {
+                grid-column: span 12 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                padding: 0 clamp(0.5rem, 3vw, 1rem) !important;
+              }
+              /* Heading inside hero */
+              .hero-content-col h1 {
+                font-size: clamp(1.45rem, 6.8vw, 2.4rem) !important;
+                margin-bottom: clamp(0.85rem, 3.5vw, 1.5rem) !important;
+                line-height: 1.2 !important;
+              }
+              /* CTA button row */
+              .hero-content-col > div:nth-child(2) {
+                justify-content: center !important;
+                margin-bottom: clamp(1rem, 3.5vw, 1.75rem) !important;
+              }
+
+              /* Photo card column — margin-bottom besar untuk clearance badge bawah */
+              .hero-photo-col {
+                grid-column: span 12 !important;
+                order: -1 !important;
+                /* Extra bottom margin untuk badge yang melayang ke bawah (-22px + padding) */
+                margin-bottom: clamp(2.5rem, 8vw, 3.5rem) !important;
+              }
+              .hero-photo-col > div {
+                /* Sedikit dikecilkan agar lebih proporsional di mobile */
+                width: 65vw !important;
+                max-width: 280px !important;
+                border-radius: clamp(0.85rem, 3vw, 1.5rem) !important;
+              }
+              /* Badge bawah foto — sesuaikan ukuran agar tidak overflow terlalu jauh */
+              .hero-photo-col > div > div:last-child {
+                padding: 0.45rem 1rem !important;
+                bottom: -16px !important;
+              }
+              .hero-photo-col > div > div:last-child > div:first-child {
+                font-size: clamp(0.72rem, 2.8vw, 0.88rem) !important;
+              }
+              .hero-photo-col > div > div:last-child > div:last-child {
+                font-size: clamp(0.6rem, 2.2vw, 0.7rem) !important;
+              }
+
+              /* Formal portrait — cocokkan dulu dengan nilai desktop di 960px agar tidak ada lompatan */
+              .formal-portrait-img {
+                width: auto !important;
+                max-width: 92vw !important;
+                max-height: clamp(520px, 84vh, 850px) !important;
+                transform: none !important;
+              }
+
+              /* Identity badge at bottom */
+              .hero-identity-badge {
+                padding: clamp(0.45rem, 2vw, 0.65rem) clamp(1rem, 5vw, 2.25rem) !important;
+                bottom: clamp(52px, 8vh, 72px) !important;
+              }
+              .hero-identity-badge > div:first-child {
+                font-size: clamp(0.82rem, 3.2vw, 1.05rem) !important;
+              }
+              .hero-identity-badge > div:last-child {
+                font-size: clamp(0.65rem, 2.5vw, 0.78rem) !important;
+              }
+
+              /* Bubble chats — lebih dekat satu sama lain & proporsional */
+              .hero-bubble-chat-1 {
+                right: auto !important;
+                left: clamp(8px, 2.5vw, 14px) !important;
+                top: 25% !important;
+                max-width: clamp(160px, 48vw, 230px) !important;
+              }
+              .hero-bubble-chat-2 {
+                left: auto !important;
+                right: clamp(8px, 2.5vw, 14px) !important;
+                top: 40% !important;
+                max-width: clamp(160px, 48vw, 230px) !important;
+              }
+              /* Bubble padding & inner text */
+              .hero-bubble-chat > div {
+                padding: clamp(0.7rem, 2.5vw, 1.15rem) clamp(0.8rem, 3vw, 1.45rem) !important;
+                gap: clamp(0.28rem, 1.2vw, 0.45rem) !important;
+              }
+              .hero-bubble-chat p {
+                font-size: clamp(0.72rem, 2.8vw, 0.88rem) !important;
+              }
+              .hero-bubble-chat > div > div:first-child span {
+                font-size: clamp(0.58rem, 2.2vw, 0.7rem) !important;
+              }
+            }
+
+
+            /* Portrait diperbesar secara progresif pada layar HP kecil (601px → 300px) */
+            @media (max-width: 600px) {
+              .formal-portrait-img {
+                /* Dari 92vw di 960px, melebar bertahap ke 100vw di 300px */
+                width: clamp(94vw, calc(92vw + (600px - 100vw) * 0.03), 100vw) !important;
+                max-width: 100vw !important;
+                height: auto !important;
+                max-height: clamp(580px, 95vh, 900px) !important;
+                transform: scale(1.08) !important;
+                transform-origin: bottom center !important;
+              }
+            }
+          `}</style>
       </section>
     </div>
   );

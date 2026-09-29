@@ -19,10 +19,11 @@ export const Navbar: React.FC<NavbarProps> = ({ mode = 'ultra' }) => {
   }, []);
 
   const navLinks = [
-    { label: 'About', href: '#about' },
-    { label: 'Projects', href: '#projects' },
-    { label: 'Experience', href: '#experience' },
-    { label: 'Contact', href: '#contact' }
+    { label: 'Tentang Saya', href: '#about' },
+    { label: 'Pendidikan', href: '#pendidikan' },
+    { label: 'Pengalaman', href: '#experience' },
+    { label: 'Proyek', href: '#projects' },
+    { label: 'Kontak', href: '#contact' }
   ];
 
   return (
@@ -85,7 +86,7 @@ export const Navbar: React.FC<NavbarProps> = ({ mode = 'ultra' }) => {
             style={{
               display: 'none',
               alignItems: 'center',
-              gap: '1.75rem',
+              gap: 'clamp(1.1rem, 2vw, 1.75rem)',
               fontFamily: 'var(--font-sans)',
               fontSize: '0.88rem',
               fontWeight: 500
