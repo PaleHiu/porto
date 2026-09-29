@@ -31,29 +31,32 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
   const [bubble2State, setBubble2State] = useState<'hidden' | 'active' | 'exiting'>('hidden');
 
   useEffect(() => {
-    // Stage 3 (Portrait) completes fully at 0.66
-    // Badge bounces in with slight delay at 0.67
-    // Bubble 1 only triggers at 0.78 (long deliberate gap after portrait & badge are settled)
-    // Bubble 2 only triggers at 0.90 (heavy extra scroll gap after Bubble 1)
-    const BADGE_THRESHOLD = 0.67;
-    const BUBBLE1_THRESHOLD = 0.78;
-    const BUBBLE2_THRESHOLD = 0.90;
+    // Stage 3 (Portrait) rises smoothly between 0.22 and 0.58
+    // Hysteresis thresholds prevent flickering/jitter when scrolling near boundaries
+    const BADGE_ENTER = 0.60;
+    const BADGE_EXIT = 0.54;
 
-    if (scrollProgress >= BADGE_THRESHOLD) {
+    const BUBBLE1_ENTER = 0.70;
+    const BUBBLE1_EXIT = 0.64;
+
+    const BUBBLE2_ENTER = 0.82;
+    const BUBBLE2_EXIT = 0.76;
+
+    if (scrollProgress >= BADGE_ENTER) {
       setBadgeState('active');
-    } else {
+    } else if (scrollProgress < BADGE_EXIT) {
       setBadgeState((prev) => (prev === 'active' ? 'exiting' : prev));
     }
 
-    if (scrollProgress >= BUBBLE1_THRESHOLD) {
+    if (scrollProgress >= BUBBLE1_ENTER) {
       setBubble1State('active');
-    } else {
+    } else if (scrollProgress < BUBBLE1_EXIT) {
       setBubble1State((prev) => (prev === 'active' ? 'exiting' : prev));
     }
 
-    if (scrollProgress >= BUBBLE2_THRESHOLD) {
+    if (scrollProgress >= BUBBLE2_ENTER) {
       setBubble2State('active');
-    } else {
+    } else if (scrollProgress < BUBBLE2_EXIT) {
       setBubble2State((prev) => (prev === 'active' ? 'exiting' : prev));
     }
   }, [scrollProgress]);
@@ -350,17 +353,16 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
   };
 
   // 4-Stage Dynamic Scroll Transitions
-  // TAHAP 1: Initial content exit (Teks & Foto.webp fade out completely and strictly by progress 0.12)
-  const initialOpacity = Math.max(0, 1 - scrollProgress / 0.12);
-  const initialTranslateY = -(scrollProgress / 0.12) * 35;
-  const initialScale = 1 - (scrollProgress / 0.12) * 0.05;
+  // TAHAP 1: Initial content exit (Organic smooth ease-out between 0.00 and 0.18)
+  const exitT = Math.min(1, Math.max(0, scrollProgress / 0.18));
+  const exitCurve = exitT * exitT * (3 - 2 * exitT); // Smoothstep S-curve
+  const initialOpacity = Math.max(0, 1 - exitCurve);
+  const initialTranslateY = -exitCurve * 35;
+  const initialScale = 1 - exitCurve * 0.04;
 
-  // JEDA / BUFFER TAHAP 1 & 2:
-  // Antara 0.12 dan 0.24, teks sudah 100% hilang, dan 3D ring masih terkunci 100% diam di kanan.
-
-  // TAHAP 3: Formal portrait reveals AFTER Stage 2 (Ring fully centered at 0.48)
-  // Physically starts OUT OF FRAME below viewport (105%), then rises smoothly into frame between 0.50 and 0.66
-  const rawFormalProgress = Math.min(1, Math.max(0, (scrollProgress - 0.50) / 0.16));
+  // TAHAP 3: Formal portrait reveals gracefully as stage 1 fades and 3D rings center
+  // Wide organic ascent window (0.22 to 0.58) ensures graceful, steady motion without sudden jumps
+  const rawFormalProgress = Math.min(1, Math.max(0, (scrollProgress - 0.22) / 0.36));
   // Smoothstep S-curve for organic physical ascent from out-of-frame
   const riseCurve = rawFormalProgress * rawFormalProgress * (3 - 2 * rawFormalProgress);
   const formalScale = 0.94 + riseCurve * 0.22; // Scales smoothly from 0.94 up to 1.16
@@ -437,7 +439,6 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
             zIndex: 10,
             opacity: initialOpacity,
             transform: `translate3d(0, ${initialTranslateY}px, 0) scale3d(${initialScale}, ${initialScale}, 1)`,
-            transition: 'opacity 0.08s linear, transform 0.08s linear',
             visibility: initialOpacity > 0 ? 'visible' : 'hidden',
             pointerEvents: initialOpacity > 0.05 ? 'auto' : 'none',
             willChange: 'opacity, transform'
@@ -1030,28 +1031,22 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
             .hero-identity-badge.badge-state-active {
               visibility: visible;
               pointer-events: auto;
-              animation: badgeBounce 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+              animation: badgeBounce 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
             }
 
             .hero-identity-badge.badge-state-exiting {
               pointer-events: none;
-              animation: badgeShrink 0.32s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+              animation: badgeShrink 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             }
 
             @keyframes badgeBounce {
               0% {
                 opacity: 0;
-                transform: translateX(-50%) translateY(24px) scale(0.3);
+                transform: translateX(-50%) translateY(18px) scale(0.92);
               }
-              48% {
+              65% {
                 opacity: 1;
-                transform: translateX(-50%) translateY(-6px) scale(1.08);
-              }
-              70% {
-                transform: translateX(-50%) translateY(3px) scale(0.96);
-              }
-              86% {
-                transform: translateX(-50%) translateY(-1px) scale(1.015);
+                transform: translateX(-50%) translateY(-2px) scale(1.02);
               }
               100% {
                 opacity: 1;
@@ -1064,13 +1059,9 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
                 opacity: 1;
                 transform: translateX(-50%) translateY(0px) scale(1);
               }
-              28% {
-                opacity: 1;
-                transform: translateX(-50%) translateY(-4px) scale(1.05);
-              }
               100% {
                 opacity: 0;
-                transform: translateX(-50%) translateY(24px) scale(0.25);
+                transform: translateX(-50%) translateY(14px) scale(0.9);
                 visibility: hidden;
               }
             }
@@ -1082,7 +1073,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
 
             .hero-bubble-chat.bubble-state-hidden {
               opacity: 0;
-              transform: translateY(28px) scale(0.2);
+              transform: translateY(20px) scale(0.9);
               visibility: hidden;
               pointer-events: none;
             }
@@ -1091,24 +1082,24 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
             .hero-bubble-chat-1.bubble-state-active {
               visibility: visible;
               pointer-events: auto;
-              animation: bubbleBounceLeft 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+              animation: bubbleBounceLeft 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
             }
 
             .hero-bubble-chat-1.bubble-state-exiting {
               pointer-events: none;
-              animation: bubbleShrinkLeft 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+              animation: bubbleShrinkLeft 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             }
 
             /* Bubble 2 (Right - Principle) Enter / Exit */
             .hero-bubble-chat-2.bubble-state-active {
               visibility: visible;
               pointer-events: auto;
-              animation: bubbleBounceRight 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+              animation: bubbleBounceRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
             }
 
             .hero-bubble-chat-2.bubble-state-exiting {
               pointer-events: none;
-              animation: bubbleShrinkRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+              animation: bubbleShrinkRight 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             }
 
             .hero-bubble-chat.bubble-state-active:hover {
@@ -1116,62 +1107,46 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
               transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
             }
 
-            /* Natural Entrance Spring Bounce Keyframes */
+            /* Natural Entrance Spring Keyframes */
             @keyframes bubbleBounceLeft {
               0% {
                 opacity: 0;
-                transform: translateY(32px) scale(0.35) rotate(-2deg);
+                transform: translateY(22px) scale(0.9);
               }
-              48% {
+              65% {
                 opacity: 1;
-                transform: translateY(-6px) scale(1.08) rotate(0.8deg);
-              }
-              70% {
-                transform: translateY(3px) scale(0.96) rotate(-0.4deg);
-              }
-              86% {
-                transform: translateY(-1px) scale(1.015) rotate(0.2deg);
+                transform: translateY(-3px) scale(1.02);
               }
               100% {
                 opacity: 1;
-                transform: translateY(0px) scale(1) rotate(0deg);
+                transform: translateY(0px) scale(1);
               }
             }
 
             @keyframes bubbleBounceRight {
               0% {
                 opacity: 0;
-                transform: translateY(32px) scale(0.35) rotate(2deg);
+                transform: translateY(22px) scale(0.9);
               }
-              48% {
+              65% {
                 opacity: 1;
-                transform: translateY(-6px) scale(1.08) rotate(-0.8deg);
-              }
-              70% {
-                transform: translateY(3px) scale(0.96) rotate(0.4deg);
-              }
-              86% {
-                transform: translateY(-1px) scale(1.015) rotate(-0.2deg);
+                transform: translateY(-3px) scale(1.02);
               }
               100% {
                 opacity: 1;
-                transform: translateY(0px) scale(1) rotate(0deg);
+                transform: translateY(0px) scale(1);
               }
             }
 
-            /* Natural Exit Elastic Shrink Keyframes */
+            /* Natural Exit Shrink Keyframes */
             @keyframes bubbleShrinkLeft {
               0% {
                 opacity: 1;
-                transform: translateY(0px) scale(1) rotate(0deg);
-              }
-              28% {
-                opacity: 1;
-                transform: translateY(-4px) scale(1.05) rotate(0.8deg);
+                transform: translateY(0px) scale(1);
               }
               100% {
                 opacity: 0;
-                transform: translateY(28px) scale(0.2) rotate(-2.5deg);
+                transform: translateY(16px) scale(0.9);
                 visibility: hidden;
               }
             }
@@ -1179,15 +1154,11 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
             @keyframes bubbleShrinkRight {
               0% {
                 opacity: 1;
-                transform: translateY(0px) scale(1) rotate(0deg);
-              }
-              28% {
-                opacity: 1;
-                transform: translateY(-4px) scale(1.05) rotate(-0.8deg);
+                transform: translateY(0px) scale(1);
               }
               100% {
                 opacity: 0;
-                transform: translateY(28px) scale(0.2) rotate(2.5deg);
+                transform: translateY(16px) scale(0.9);
                 visibility: hidden;
               }
             }
