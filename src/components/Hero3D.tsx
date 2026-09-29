@@ -391,7 +391,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
         style={{
           position: 'sticky',
           top: 0,
-          height: '100vh',
+          height: '100svh',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -1012,6 +1012,16 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
 
         {/* Responsive Breakpoint & Dynamic Bubble Animation Styles */}
         <style>{`
+            .hero-sticky-viewport {
+              position: -webkit-sticky !important;
+              position: sticky !important;
+              top: 0 !important;
+              height: 100vh !important;
+              height: 100dvh !important;
+              height: 100svh !important;
+              width: 100% !important;
+            }
+
             /* --- Identity Badge Bounce & Shrink Animations --- */
             .hero-identity-badge {
               will-change: transform, opacity;
@@ -1192,6 +1202,15 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
             @media (max-width: 960px) {
               .hero-pinned-wrapper {
                 height: 320vh !important;
+              }
+              .hero-sticky-viewport {
+                position: -webkit-sticky !important;
+                position: sticky !important;
+                top: 0 !important;
+                height: 100vh !important;
+                height: 100dvh !important;
+                height: 100svh !important;
+                width: 100% !important;
               }
 
               /* Hero initial view layout */
