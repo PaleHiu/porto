@@ -118,8 +118,10 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
             if (totalDistance > 0) {
               const currentProgress = -rect.top / totalDistance;
               const clamped = Math.min(Math.max(currentProgress, 0), 1);
-              setScrollProgress(clamped);
-              scrollProgressRef.current = clamped;
+              if (Math.abs(clamped - scrollProgressRef.current) > 0.0005) {
+                setScrollProgress(clamped);
+                scrollProgressRef.current = clamped;
+              }
             }
           }
           ticking = false;
@@ -155,8 +157,9 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
       antialias: true,
       powerPreference: 'high-performance'
     });
+    const isMobileInitial = width <= 960;
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobileInitial ? 1.0 : 1.5));
     renderer.setClearColor(0x000000, 0);
 
     mountRef.current.innerHTML = '';
@@ -166,7 +169,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
     const ringsGroup = new THREE.Group();
     scene.add(ringsGroup);
 
-    const ringGeometry = new THREE.TorusGeometry(2.4, 0.08, 16, 100);
+    const ringGeometry = new THREE.TorusGeometry(2.4, 0.08, 12, isMobileInitial ? 48 : 100);
     const ringMaterial = new THREE.MeshBasicMaterial({
       color: 0x00f5d4,
       wireframe: true,
@@ -176,7 +179,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
     const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
     ringsGroup.add(ringMesh);
 
-    const innerRingGeometry = new THREE.TorusGeometry(1.6, 0.05, 16, 80);
+    const innerRingGeometry = new THREE.TorusGeometry(1.6, 0.05, 12, isMobileInitial ? 40 : 80);
     const innerRingMaterial = new THREE.MeshBasicMaterial({
       color: 0x3b82f6,
       wireframe: true,
@@ -186,11 +189,10 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
     const innerRingMesh = new THREE.Mesh(innerRingGeometry, innerRingMaterial);
     ringsGroup.add(innerRingMesh);
 
-    const isMobileInitial = width <= 960;
     ringsGroup.position.set(isMobileInitial ? 0 : 2.4, 0, -1);
 
     // 2. Ambient Floating Particles
-    const particleCount = 180;
+    const particleCount = isMobileInitial ? 60 : 180;
     const particleGeometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
 
@@ -268,16 +270,8 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
         currentX += (targetX - currentX) * 0.05;
         currentY += (targetY - currentY) * 0.05;
 
-        // Direct real-time scroll progress calculation from DOM every frame
-        const heroTrack = trackRef.current || document.getElementById('hero');
-        let currentScroll = 0;
-        if (heroTrack) {
-          const rect = heroTrack.getBoundingClientRect();
-          const maxScroll = rect.height - window.innerHeight;
-          if (maxScroll > 0) {
-            currentScroll = Math.min(Math.max(-rect.top / maxScroll, 0), 1);
-          }
-        }
+        // Highly efficient scroll progress from memory ref (zero forced reflows)
+        const currentScroll = scrollProgressRef.current;
 
         const isMobile = window.innerWidth <= 960;
         const initialX = isMobile ? 0 : 2.4;
@@ -391,7 +385,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
         style={{
           position: 'sticky',
           top: 0,
-          height: '100svh',
+          height: '100dvh',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -1018,7 +1012,6 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
               top: 0 !important;
               height: 100vh !important;
               height: 100dvh !important;
-              height: 100svh !important;
               width: 100% !important;
             }
 
@@ -1209,7 +1202,6 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
                 top: 0 !important;
                 height: 100vh !important;
                 height: 100dvh !important;
-                height: 100svh !important;
                 width: 100% !important;
               }
 
@@ -1268,14 +1260,18 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
               .formal-portrait-img {
                 width: auto !important;
                 max-width: 92vw !important;
-                max-height: clamp(520px, 84vh, 850px) !important;
+                max-height: clamp(520px, 84dvh, 850px) !important;
                 transform: none !important;
+                /* GPU-friendly optimized shadow for smooth mobile animation */
+                filter: drop-shadow(0 0 18px rgba(0, 245, 212, 0.25)) drop-shadow(0 -4px 14px rgba(0, 0, 0, 0.45)) !important;
               }
 
               /* Identity badge at bottom */
               .hero-identity-badge {
                 padding: clamp(0.45rem, 2vw, 0.65rem) clamp(1rem, 5vw, 2.25rem) !important;
-                bottom: clamp(52px, 8vh, 72px) !important;
+                bottom: clamp(52px, 8dvh, 72px) !important;
+                backdrop-filter: blur(12px) !important;
+                -webkit-backdrop-filter: blur(12px) !important;
               }
               .hero-identity-badge > div:first-child {
                 font-size: clamp(0.82rem, 3.2vw, 1.05rem) !important;
@@ -1301,6 +1297,8 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
               .hero-bubble-chat > div {
                 padding: clamp(0.7rem, 2.5vw, 1.15rem) clamp(0.8rem, 3vw, 1.45rem) !important;
                 gap: clamp(0.28rem, 1.2vw, 0.45rem) !important;
+                backdrop-filter: blur(12px) !important;
+                -webkit-backdrop-filter: blur(12px) !important;
               }
               .hero-bubble-chat p {
                 font-size: clamp(0.72rem, 2.8vw, 0.88rem) !important;
@@ -1318,7 +1316,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({ mode }) => {
                 width: clamp(94vw, calc(92vw + (600px - 100vw) * 0.03), 100vw) !important;
                 max-width: 100vw !important;
                 height: auto !important;
-                max-height: clamp(580px, 95vh, 900px) !important;
+                max-height: clamp(580px, 95dvh, 900px) !important;
                 transform: scale(1.08) !important;
                 transform-origin: bottom center !important;
               }
